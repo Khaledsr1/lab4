@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Teacher Page</title>
+</head>
+<body>
+	<h1>Teacher Home Page</h1>
+	<p>Welcome, Teacher!</p>
+	<!DOCTYPE html>
+	<html>
+	<head>
+	  <title>Teacher Page</title>
+	</head>
+	<body>
+	  <h1>Teacher Page</h1>
+	  <div id="content"></div>
+	  <script>
+		fetch('/teacher', {
+		  method: 'GET',
+		  headers: {
+			'Authorization': `Bearer ${localStorage.getItem('token')}`
+		  }
+		})
+		.then(response => {
+		  if (response.status === 403) {
+			alert('Access forbidden');
+		  } else if (response.status === 401) {
+			alert('Unauthorized');
+		  } else {
+			return response.text();
+		  }
+		})
+		.then(data => {
+		  document.getElementById('content').innerHTML = data;
+		})
+		.catch(error => {
+		  console.error('Error:', error);
+		});
+	  </script>
+	</body>
+	</html>
+	
+</body>
+</html>

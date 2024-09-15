@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <ul>
+    <% if (role === 'admin') { %>
+      <li><a href="/admin">Admin Page</a></li>
+    <% } %>
+    <% if (['student', 'teacher', 'admin'].includes(role)) { %>
+      <li><a href="/student1">Student 1 Page</a></li>
+      <li><a href="/student2">Student 2 Page</a></li>
+    <% } %>
+    <% if (['teacher', 'admin'].includes(role)) { %>
+      <li><a href="/teacher">Teacher Page</a></li>
+    <% } %>
+    <% if (userId) { %>
+      <li><a href="/users/<%= userId %>">User Profile Page</a></li>
+    <% } %>
+  </ul>
+  
+  <script>
+    window.onload = function() {
+      console.log('Script loaded and running'); // تأكد من أن السكربت يتم تحميله وتنفيذه
+
+      const token = localStorage.getItem('token');
+      console.log('Token found in localStorage:', token);
+
+      if (!token) {
+        console.log('No token found, redirecting to login');
+        window.location.href = '/login';
+        return;
+      }
+
+      fetch('/dashboard', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.status === 401) {
+          console.log('Unauthorized - Invalid or missing token');
+          alert('Access denied. Please log in again.');
+          window.location.href = '/login';
+        } else {
+          return response.json();
+        }
+      })
+      .then(data => {
+        if (data) {
+          console.log('Dashboard data:', data);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching dashboard:', error);
+      });
+    }
+  </script>
+</body>
+</html>

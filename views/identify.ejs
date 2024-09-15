@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Identify</title>
+</head>
+<body>
+  <h1>Identify</h1>
+  <form id="loginForm">
+    <label for="userID">UserID:</label>
+    <input type="text" id="userID" name="userID" required><br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required><br>
+    <input type="submit" value="Identify">
+  </form>
+
+  <script>
+    console.log('Script loaded');
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const userID = document.getElementById('userID').value;
+      const password = document.getElementById('password').value;
+
+      console.log('Step 1: Login button clicked');
+      console.log('Step 2: Collected user input');
+      console.log('UserID:', userID);
+      console.log('Password:', password);
+
+      fetch('/identify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userID, password })
+      })
+      .then(response => {
+        console.log('Step 3: Received response from server');
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.message || 'Unknown error');
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Step 4: Parsed response data');
+        console.log('Response data:', data);
+
+        if (data.token) {
+          console.log('Step 5: Token received, storing in localStorage');
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userRole', data.role); // تخزين دور المستخدم
+          console.log('Token stored in localStorage:', localStorage.getItem('token'));
+          console.log('User role stored in localStorage:', localStorage.getItem('userRole'));
+
+          console.log('Step 6: Redirecting to', data.redirectUrl);
+          window.location.href = data.redirectUrl; // Redirect to the specified URL
+        } else {
+          console.log('Step 5: No token received, login failed');
+          alert('Login failed: ' + (data.message || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Step 7: Error occurred:', error);
+        alert('An error occurred: ' + error.message);
+      });
+    });
+
+    // Make sure to send token in future requests
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        fetch('/dashboard', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.text();
+          } else {
+            throw new Error('Failed to fetch dashboard');
+          }
+        })
+        .then(text => {
+          console.log('Dashboard response:', text);
+        })
+        .catch(error => {
+          console.error('Error fetching dashboard:', error);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
